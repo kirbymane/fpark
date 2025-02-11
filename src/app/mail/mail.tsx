@@ -9,6 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AccountSwitcher from "./account-switcher";
 
 type Props = {
   defaultLayout: number[] | undefined;
@@ -56,7 +57,7 @@ const Mail = ({
                 isCollapsed ? "h-[52px]" : "px-2",
               )}
             >
-              Account Switcher
+              <AccountSwitcher isCollapsed={false} />
             </div>
             <Separator />
             {/* {Sidebar} */}
