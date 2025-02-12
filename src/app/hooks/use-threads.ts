@@ -11,7 +11,6 @@ const UseThreads = () => {
   const [tab] = useLocalStorage("tab", "inbox");
   const [done] = useLocalStorage("done", false);
   const [threadId, setThreadId] = useAtom(threadIdAtom);
-
   const {
     data: threads,
     isFetching,
@@ -28,7 +27,6 @@ const UseThreads = () => {
       refetchInterval: 5000,
     },
   );
-
   return {
     threads,
     isFetching,

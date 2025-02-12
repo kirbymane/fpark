@@ -38,10 +38,10 @@ const Sidebar = ({ isCollapsed }: Props) => {
             variant: tab === "inbox" ? "default" : "ghost",
           },
           {
-            title: "Drafts",
+            title: "Draft",
             label: draftThreads?.toString() ?? "0",
             icon: File,
-            variant: tab === "drafts" ? "default" : "ghost",
+            variant: tab === "draft" ? "default" : "ghost",
           },
           {
             title: "Sent",
