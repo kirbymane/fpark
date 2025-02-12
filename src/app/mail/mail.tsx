@@ -1,5 +1,7 @@
 "use client";
+
 import React from "react";
+
 import {
   ResizableHandle,
   ResizablePanel,
@@ -10,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AccountSwitcher from "./account-switcher";
+import Sidebar from "./sidebar";
+import ThreadList from "./thread-list";
 
 type Props = {
   defaultLayout: number[] | undefined;
@@ -60,7 +64,7 @@ const Mail = ({
               <AccountSwitcher isCollapsed={false} />
             </div>
             <Separator />
-            {/* {Sidebar} */}
+            <Sidebar isCollapsed={isCollapsed} />
             <div className="flex-1"></div>
             {/* {AI} */}
             Ask AI
@@ -89,8 +93,12 @@ const Mail = ({
             <Separator />
             {/* {Search Bar} */}
             Search Bar
-            <TabsContent value="inbox">Inbox</TabsContent>
-            <TabsContent value="done">Done</TabsContent>
+            <TabsContent value="inbox">
+              <ThreadList />
+            </TabsContent>
+            <TabsContent value="done">
+              <ThreadList />
+            </TabsContent>
           </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
