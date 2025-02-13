@@ -157,7 +157,7 @@ const EmailEditor = ({
             onClick={() => setExpanded(!expanded)}
           >
             <span className="font-medium text-green-600">Draft {""}</span>
-            <span>to {to.join(", ")}</span>
+            {/* <span>to {to.join(", ")}</span> */}
           </div>
           <AiComposeButton
             isComposing={defaultToolbarExpanded ?? false}
