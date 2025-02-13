@@ -10,6 +10,10 @@ import { Button } from "@/components/ui/button";
 import TagInput from "./tag-input";
 import { Input } from "@/components/ui/input";
 import { s } from "node_modules/framer-motion/dist/types.d-6pKw1mTI";
+import AiComposeButton from "./ai-compose-button";
+import { generate } from "@/lib/action";
+import { readStreamableValue } from "ai/rsc";
+import { set } from "date-fns";
 
 type Props = {
   subject: string;
@@ -45,12 +49,27 @@ const EmailEditor = ({
   const [expanded, setExpanded] = React.useState<boolean>(
     defaultToolbarExpanded ?? false,
   );
+  const [token, setToken] = React.useState("");
 
-  const CustomText = Text.extend({
+  const onGenerate = (token: string) => {
+    editor?.commands.insertContent(token);
+  };
+
+  const aiGenerate = async () => {
+    const { output } = await generate(value);
+
+    for await (const token of readStreamableValue(output)) {
+      if (token) {
+        setToken(token);
+      }
+    }
+  };
+
+  const customText = Text.extend({
     addKeyboardShortcuts() {
       return {
         "Meta-j": () => {
-          console.log("meta-j");
+          aiGenerate();
           return true;
         },
       };
@@ -59,11 +78,45 @@ const EmailEditor = ({
 
   const editor = useEditor({
     autofocus: false,
-    extensions: [StarterKit],
+    extensions: [StarterKit, customText],
     onUpdate: ({ editor }) => {
       setValue(editor.getHTML());
     },
+    editorProps: {
+      attributes: {
+        placeholder: "Write your email here...",
+      },
+    },
   });
+
+  React.useEffect(() => {
+    if (!token || !editor) return;
+    editor.commands.insertContent(token);
+  }, [editor, token]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key === "Enter" &&
+        editor &&
+        !["INPUT", "TEXTAREA", "SELECT"].includes(
+          document.activeElement?.tagName || "",
+        )
+      ) {
+        editor.commands.focus();
+      }
+      if (event.key === "Escape" && editor) {
+        editor.commands.blur();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [editor]);
 
   if (!editor) {
     return null;
@@ -106,6 +159,10 @@ const EmailEditor = ({
             <span className="font-medium text-green-600">Draft {""}</span>
             <span>to {to.join(", ")}</span>
           </div>
+          <AiComposeButton
+            isComposing={defaultToolbarExpanded ?? false}
+            onGenerate={onGenerate}
+          />
         </div>
       </div>
 
