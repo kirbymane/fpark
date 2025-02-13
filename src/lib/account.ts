@@ -1,3 +1,4 @@
+import { db } from "@/server/db";
 import type {
   EmailMessage,
   SyncUpdatedResponse,
@@ -6,6 +7,7 @@ import type {
 } from "@/types";
 import axios from "axios";
 import { s } from "node_modules/framer-motion/dist/types.d-6pKw1mTI";
+import { syncEmailsToDatabase } from "./sync-to-db";
 
 const API_BASE_URL = "https://api.aurinko.io/v1";
 
@@ -44,7 +46,7 @@ export class Account {
     let params: Record<string, string> = {};
 
     if (deltaToken) params.deltaToken = deltaToken;
-    if (pageToken) params.deltaToken = pageToken;
+    if (pageToken) params.pageToken = pageToken;
 
     const response = await axios.get<SyncUpdatedResponse>(
       `https://api.aurinko.io/v1/email/sync/updated`,
@@ -173,5 +175,54 @@ export class Account {
       }
       throw error;
     }
+  }
+
+  async syncEmails() {
+    const account = await db.account.findUnique({
+      where: {
+        accessToken: this.token,
+      },
+    });
+
+    if (!account) throw new Error("Invalid token");
+    if (!account.nextDeltaToken) throw new Error("No delta token");
+
+    let response = await this.getUpdatedEmails({
+      deltaToken: account.nextDeltaToken,
+    });
+
+    let allEmails: EmailMessage[] = response.records;
+    let storedDeltaToken = account.nextDeltaToken;
+
+    if (response.nextDeltaToken) {
+      storedDeltaToken = response.nextDeltaToken;
+    }
+
+    while (response.nextPageToken) {
+      response = await this.getUpdatedEmails({
+        pageToken: response.nextPageToken,
+      });
+      allEmails = allEmails.concat(response.records);
+      if (response.nextDeltaToken) {
+        storedDeltaToken = response.nextDeltaToken;
+      }
+    }
+
+    if (!response) throw new Error("Failed to sync emails");
+
+    try {
+      await syncEmailsToDatabase(allEmails, account.id);
+    } catch (error) {
+      console.log("error", error);
+    }
+
+    await db.account.update({
+      where: {
+        id: account.id,
+      },
+      data: {
+        nextDeltaToken: storedDeltaToken,
+      },
+    });
   }
 }

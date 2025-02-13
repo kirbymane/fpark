@@ -87,6 +87,8 @@ export const accountRouter = createTRPCRouter({
         input.accountId,
         ctx.auth.userId,
       );
+      const acc = new Account(account.accessToken);
+      acc.syncEmails().catch((e) => console.log("sync emails error", e));
 
       let filter: Prisma.ThreadWhereInput = {};
       if (input.tab === "inbox") {
@@ -172,9 +174,11 @@ export const accountRouter = createTRPCRouter({
         throw new Error("Thread not found");
       }
 
-      const lastExternalEmail = thread.emails.reverse().find((email) => {
-        return email.from.address !== account.emailAddress;
-      });
+      // const lastExternalEmail = thread.emails.reverse().find((email) => {
+      //   return email.from.address !== account.emailAddress;
+      // });
+
+      const lastExternalEmail = thread.emails[thread.emails.length - 1];
 
       if (!lastExternalEmail) {
         throw new Error("No external emails found");
