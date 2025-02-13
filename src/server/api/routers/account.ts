@@ -2,9 +2,6 @@ import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "../trpc";
 import { db } from "@/server/db";
 import { Prisma } from "@prisma/client";
-import { auth } from "@clerk/nextjs/server";
-import { L } from "node_modules/framer-motion/dist/types.d-6pKw1mTI";
-import { add } from "date-fns";
 import { emailAddressSchema } from "@/types";
 import { Account } from "@/lib/account";
 
@@ -26,6 +23,7 @@ export const authoriseAccountAccess = async (
   });
 
   if (!account) {
+    console.log("Account not found", accountId, userId);
     throw new Error("Account not found");
   }
 

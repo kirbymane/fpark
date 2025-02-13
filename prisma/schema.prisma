@@ -23,10 +23,11 @@ model Account {
     id     String @id @default(cuid())
     userId String
 
-    accessToken    String  @unique
-    emailAddress   String
-    name           String
-    nextDeltaToken String?
+    accessToken      String  @unique
+    emailAddress     String
+    name             String
+    nextDeltaToken   String?
+    oramaIndexColumn Json?
 
     user          User           @relation(fields: [userId], references: [id])
     threads       Thread[]
