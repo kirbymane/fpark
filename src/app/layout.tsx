@@ -10,6 +10,7 @@ import { TRPCReactProvider } from "@/trpc/react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "next-themes";
 import KBar from "@/components/kbar";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -31,7 +32,10 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <TRPCReactProvider>
-              <KBar>{children}</KBar>
+              <KBar>
+                {children}
+                <Toaster />
+              </KBar>
             </TRPCReactProvider>
           </ThemeProvider>
         </body>

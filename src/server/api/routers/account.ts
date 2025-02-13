@@ -5,6 +5,8 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
 import { L } from "node_modules/framer-motion/dist/types.d-6pKw1mTI";
 import { add } from "date-fns";
+import { emailAddressSchema } from "@/types";
+import { Account } from "@/lib/account";
 
 export const authoriseAccountAccess = async (
   accountId: string,
@@ -195,5 +197,38 @@ export const accountRouter = createTRPCRouter({
         },
         id: lastExternalEmail.internetMessageId,
       };
+    }),
+  sendEmail: privateProcedure
+    .input(
+      z.object({
+        accountId: z.string(),
+        body: z.string(),
+        subject: z.string(),
+        from: emailAddressSchema,
+        to: z.array(emailAddressSchema),
+        cc: z.array(emailAddressSchema).optional(),
+        bcc: z.array(emailAddressSchema).optional(),
+        replyTo: emailAddressSchema,
+        inReplyTo: z.string().optional(),
+        threadId: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const acc = await authoriseAccountAccess(
+        input.accountId,
+        ctx.auth.userId,
+      );
+      const account = new Account(acc.accessToken);
+      await account.sendEmail({
+        body: input.body,
+        subject: input.subject,
+        threadId: input.threadId,
+        to: input.to,
+        bcc: input.bcc,
+        cc: input.cc,
+        replyTo: input.replyTo,
+        from: input.from,
+        inReplyTo: input.inReplyTo,
+      });
     }),
 });

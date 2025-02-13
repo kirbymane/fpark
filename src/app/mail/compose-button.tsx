@@ -1,10 +1,7 @@
 import React from "react";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -14,6 +11,8 @@ import { Pencil } from "lucide-react";
 import { useLocalStorage } from "usehooks-ts";
 import { api } from "@/trpc/react";
 import EmailEditor from "./email-editor";
+import UseThreads from "../hooks/use-threads";
+import { toast } from "sonner";
 
 const ComposeButton = () => {
   const [open, setOpen] = React.useState(false);
@@ -27,8 +26,41 @@ const ComposeButton = () => {
   const [subject, setSubject] = React.useState<string>("");
   const data = null;
 
+  const sendEmail = api.account.sendEmail.useMutation();
+  const { account } = UseThreads();
+
   const handleSend = async (value: string) => {
-    console.log("Sending email", value);
+    console.log("send", value);
+    if (!account) return;
+    sendEmail.mutate(
+      {
+        accountId,
+        threadId: undefined,
+        body: value,
+        subject,
+        from: {
+          name: account?.name ?? "Me",
+          address: account?.emailAddress ?? "me@example.com",
+        },
+        to: toValues.map((to) => ({ name: to.value, address: to.value })),
+        cc: ccValues.map((cc) => ({ name: cc.value, address: cc.value })),
+        replyTo: {
+          name: account?.name ?? "Me",
+          address: account?.emailAddress ?? "me@example.com",
+        },
+        inReplyTo: undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Email sent");
+          setOpen(false);
+        },
+        onError: (error) => {
+          console.log(error);
+          toast.error(error.message);
+        },
+      },
+    );
   };
 
   return (
@@ -55,11 +87,9 @@ const ComposeButton = () => {
               subject={subject}
               setSubject={setSubject}
               to={[]}
-              isSending={false}
+              isSending={sendEmail.isPending}
               defaultToolbarExpanded={true}
-              handleSend={() => {
-                handleSend;
-              }}
+              handleSend={handleSend}
             />
           </DrawerHeader>
         </DrawerContent>

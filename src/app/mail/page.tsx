@@ -10,7 +10,7 @@ const Mail = dynamic(() => import("./mail"), { ssr: false });
 const MailDashboard = () => {
   return (
     <>
-      <div className="fixed bottom-4 left-4">
+      <div className="overlay absolute bottom-4 left-4 z-10">
         <div className="flex items-center gap-2">
           <UserButton />
           <ThemeToggle />
